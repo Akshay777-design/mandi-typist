@@ -116,11 +116,8 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
     "url": "pwa-512x512.png",
     "revision": "41d7132d42bbcff241f14c6e35d63627"
   }, {
-    "url": "pwa-maskable-512x512.png",
-    "revision": "41d7132d42bbcff241f14c6e35d63627"
-  }, {
     "url": "manifest.webmanifest",
-    "revision": "82e35e089f545face1cb99ad31acca71"
+    "revision": "114dfacb1146699bea99c40ce9c1aa17"
   }], {});
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html")));
