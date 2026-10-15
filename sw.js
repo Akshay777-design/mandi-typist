@@ -89,6 +89,9 @@ define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
     "url": "pwa-192x192.png",
     "revision": "9c8e470ae0369763d6eef5d61fae6f65"
   }, {
+    "url": "privacy.html",
+    "revision": "3158607adfb5a9308055ec0aa4060a37"
+  }, {
     "url": "index.html",
     "revision": "1c344f1eb12c9cc44c3c9710f007b0c2"
   }, {
