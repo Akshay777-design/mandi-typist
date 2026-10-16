@@ -1,4 +1,4 @@
-# Mandi Typist (മാണ്ടി ടൈപ്പിസ്റ്റ്) 🥬⚖️
+# Mandi Typist 🥬⚖️
 
 > Mobile-first web app designed to master vegetable names in Manglish (Malayalam written in English letters) along with decimal billing quantities for wholesale vegetable shops, mandi counters, and grocery billing clerks.
 
