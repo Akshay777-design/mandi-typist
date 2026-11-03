@@ -1,0 +1,6 @@
+{
+  "name": "Mandi Typist",
+  "description": "Vegetable billing and decimal quantity typing speed practice in Manglish and Malayalam for wholesale mandis and grocery shops.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
