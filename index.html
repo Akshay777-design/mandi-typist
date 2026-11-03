@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+(function() {
+  if (typeof window === 'undefined') return;
+  var OrigWebSocket = window.WebSocket;
+  if (!OrigWebSocket) return;
+  window.WebSocket = function(url, protocols) {
+    var isVite = (typeof protocols === 'string' && (protocols === 'vite-hmr' || protocols === 'vite-ping')) ||
+                 (Array.isArray(protocols) && (protocols.indexOf('vite-hmr') !== -1 || protocols.indexOf('vite-ping') !== -1)) ||
+                 (typeof url === 'string' && (url.indexOf('vite-hmr') !== -1 || url.indexOf('token=') !== -1));
+    if (!isVite) {
+      try { return new OrigWebSocket(url, protocols); } catch (e) {}
+    }
+    var listeners = {};
+    var mockSocket = {
+      readyState: 1,
+      url: String(url),
+      protocol: typeof protocols === 'string' ? protocols : 'vite-hmr',
+      extensions: '',
+      bufferedAmount: 0,
+      binaryType: 'blob',
+      addEventListener: function(type, listener) {
+        if (!listeners[type]) listeners[type] = [];
+        listeners[type].push(listener);
+        if (type === 'open') {
+          setTimeout(function() {
+            try { listener({ type: 'open', target: mockSocket }); } catch (_) {}
+          }, 0);
+        }
+      },
+      removeEventListener: function(type, listener) {
+        if (!listeners[type]) return;
+        listeners[type] = listeners[type].filter(function(l) { return l !== listener; });
+      },
+      dispatchEvent: function(event) {
+        var list = listeners[event.type];
+        if (list) {
+          list.forEach(function(l) { try { l(event); } catch (_) {} });
+        }
+        return true;
+      },
+      send: function() {},
+      close: function(code, reason) {
+        mockSocket.readyState = 3;
+        var list = listeners['close'];
+        if (list) {
+          list.forEach(function(l) {
+            try { l({ type: 'close', code: code || 1000, reason: reason || '', target: mockSocket }); } catch (_) {}
+          });
+        }
+      }
+    };
+    return mockSocket;
+  };
+  window.WebSocket.prototype = OrigWebSocket.prototype;
+  window.WebSocket.CONNECTING = 0;
+  window.WebSocket.OPEN = 1;
+  window.WebSocket.CLOSING = 2;
+  window.WebSocket.CLOSED = 3;
+})();
+                </script>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <title>Mandi Typist</title>
+    <meta name="description" content="Vegetable billing and decimal quantity typing practice in Manglish and Malayalam for wholesale mandis." />
+    <meta property="og:title" content="Mandi Typist" />
+    <meta property="og:description" content="Practice typing vegetable names in Manglish and decimal quantities to boost speed and accuracy for mandi wholesale billing." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#15803d" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="MandiTypist" />
+    
+    <!-- PWA Icons & Manifest Link -->
+    <link rel="icon" type="image/svg+xml" href="/mandi-typist/icon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/mandi-typist/pwa-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/mandi-typist/pwa-512x512.png" />
+    <link rel="apple-touch-icon" href="/mandi-typist/apple-touch-icon.png" />
+    <link rel="manifest" href="/mandi-typist/manifest.webmanifest" crossorigin="use-credentials" />
+
+    <!-- Google Fonts for Malayalam, Plus Jakarta Sans, and Tabular JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Noto+Sans+Malayalam:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script type="module" crossorigin src="/mandi-typist/assets/index-CtIegyIG.js"></script>
+    <link rel="stylesheet" crossorigin href="/mandi-typist/assets/index--2MdYCNv.css">
+  <link rel="manifest" href="/mandi-typist/manifest.webmanifest" crossorigin="use-credentials"><script id="vite-plugin-pwa:register-sw" src="/mandi-typist/registerSW.js"></script></head>
+  <body class="bg-slate-50 text-slate-900 antialiased selection:bg-emerald-500 selection:text-white dark:bg-slate-950 dark:text-slate-100 min-h-screen">
+    <div id="root"></div>
+    <script>
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
+        window.addEventListener('load', function() {
+          const swPath = (document.querySelector('link[rel="manifest"]')?.getAttribute('href') || '/manifest.webmanifest')
+            .replace('manifest.webmanifest', 'sw.js')
+            .replace('manifest.json', 'sw.js');
+          navigator.serviceWorker.register(swPath).catch(function() {});
+        });
+      }
+    </script>
+  </body>
+</html>
