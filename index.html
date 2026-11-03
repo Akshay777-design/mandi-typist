@@ -3,69 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-    <script>
-      // Safe guard for Vite HMR WebSockets in iframe/proxy environments
-      (function() {
-        if (typeof window === 'undefined') return;
-        var OrigWebSocket = window.WebSocket;
-        if (!OrigWebSocket) return;
-        window.WebSocket = function(url, protocols) {
-          var isVite = (typeof protocols === 'string' && (protocols === 'vite-hmr' || protocols === 'vite-ping')) ||
-                       (Array.isArray(protocols) && (protocols.indexOf('vite-hmr') !== -1 || protocols.indexOf('vite-ping') !== -1)) ||
-                       (typeof url === 'string' && (url.indexOf('vite-hmr') !== -1 || url.indexOf('token=') !== -1));
-          if (!isVite) {
-            try { return new OrigWebSocket(url, protocols); } catch (e) {}
-          }
-          var listeners = {};
-          var mockSocket = {
-            readyState: 1, // OPEN
-            url: String(url),
-            protocol: typeof protocols === 'string' ? protocols : 'vite-hmr',
-            extensions: '',
-            bufferedAmount: 0,
-            binaryType: 'blob',
-            addEventListener: function(type, listener) {
-              if (!listeners[type]) listeners[type] = [];
-              listeners[type].push(listener);
-              if (type === 'open') {
-                setTimeout(function() {
-                  try { listener({ type: 'open', target: mockSocket }); } catch (_) {}
-                }, 0);
-              }
-            },
-            removeEventListener: function(type, listener) {
-              if (!listeners[type]) return;
-              listeners[type] = listeners[type].filter(function(l) { return l !== listener; });
-            },
-            dispatchEvent: function(event) {
-              var list = listeners[event.type];
-              if (list) {
-                list.forEach(function(l) { try { l(event); } catch (_) {} });
-              }
-              return true;
-            },
-            send: function() {
-              // Gracefully handle send calls from Vite without error
-            },
-            close: function(code, reason) {
-              mockSocket.readyState = 3; // CLOSED
-              var list = listeners['close'];
-              if (list) {
-                list.forEach(function(l) {
-                  try { l({ type: 'close', code: code || 1000, reason: reason || '', target: mockSocket }); } catch (_) {}
-                });
-              }
-            }
-          };
-          return mockSocket;
-        };
-        window.WebSocket.prototype = OrigWebSocket.prototype;
-        window.WebSocket.CONNECTING = 0;
-        window.WebSocket.OPEN = 1;
-        window.WebSocket.CLOSING = 2;
-        window.WebSocket.CLOSED = 3;
-      })();
-    </script>
     <title>Mandi Typist</title>
     <meta name="description" content="Vegetable billing and decimal quantity typing practice in Manglish and Malayalam for wholesale mandis." />
     <meta property="og:title" content="Mandi Typist" />

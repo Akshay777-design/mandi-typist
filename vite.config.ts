@@ -9,6 +9,85 @@ export default defineConfig(() => {
   return {
     base: basePath,
     plugins: [
+      {
+        name: 'websocket-guard-plugin',
+        transformIndexHtml: {
+          order: 'pre',
+          handler() {
+            return [
+              {
+                tag: 'script',
+                children: `
+(function() {
+  if (typeof window === 'undefined') return;
+  var OrigWebSocket = window.WebSocket;
+  if (!OrigWebSocket) return;
+  window.WebSocket = function(url, protocols) {
+    var isVite = (typeof protocols === 'string' && (protocols === 'vite-hmr' || protocols === 'vite-ping')) ||
+                 (Array.isArray(protocols) && (protocols.indexOf('vite-hmr') !== -1 || protocols.indexOf('vite-ping') !== -1)) ||
+                 (typeof url === 'string' && (url.indexOf('vite-hmr') !== -1 || url.indexOf('token=') !== -1));
+    if (!isVite) {
+      try { return new OrigWebSocket(url, protocols); } catch (e) {}
+    }
+    var listeners = {};
+    var mockSocket = {
+      readyState: 1,
+      url: String(url),
+      protocol: typeof protocols === 'string' ? protocols : 'vite-hmr',
+      extensions: '',
+      bufferedAmount: 0,
+      binaryType: 'blob',
+      addEventListener: function(type, listener) {
+        if (!listeners[type]) listeners[type] = [];
+        listeners[type].push(listener);
+        if (type === 'open') {
+          setTimeout(function() {
+            try { listener({ type: 'open', target: mockSocket }); } catch (_) {}
+          }, 0);
+        }
+      },
+      removeEventListener: function(type, listener) {
+        if (!listeners[type]) return;
+        listeners[type] = listeners[type].filter(function(l) { return l !== listener; });
+      },
+      dispatchEvent: function(event) {
+        var list = listeners[event.type];
+        if (list) {
+          list.forEach(function(l) { try { l(event); } catch (_) {} });
+        }
+        return true;
+      },
+      send: function() {},
+      close: function(code, reason) {
+        mockSocket.readyState = 3;
+        var list = listeners['close'];
+        if (list) {
+          list.forEach(function(l) {
+            try { l({ type: 'close', code: code || 1000, reason: reason || '', target: mockSocket }); } catch (_) {}
+          });
+        }
+      }
+    };
+    return mockSocket;
+  };
+  window.WebSocket.prototype = OrigWebSocket.prototype;
+  window.WebSocket.CONNECTING = 0;
+  window.WebSocket.OPEN = 1;
+  window.WebSocket.CLOSING = 2;
+  window.WebSocket.CLOSED = 3;
+})();
+                `,
+                injectTo: 'head-prepend',
+              },
+            ];
+          },
+        },
+        transform(code, id) {
+          if (id.includes('client.mjs') || id.includes('@vite/client') || id.includes('bundledDevClient')) {
+            return code.replace(/ws\.send\(JSON\.stringify\(data\)\)/g, 'if (ws) ws.send(JSON.stringify(data))');
+          }
+        },
+      },
       react(),
       tailwindcss(),
       VitePWA({
@@ -67,7 +146,7 @@ export default defineConfig(() => {
       },
     },
     server: {
-      hmr: process.env.DISABLE_HMR !== 'true',
+      hmr: false,
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };

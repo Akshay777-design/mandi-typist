@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "postinstall": "sed -i 's/ws\\.send(JSON\\.stringify(data))/if (ws) ws.send(JSON.stringify(data))/g' node_modules/vite/dist/client/client.mjs node_modules/vite/dist/client/bundledDevClient.mjs 2>/dev/null || true"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
