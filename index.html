@@ -31,13 +31,12 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js').then(function(reg) {
-            console.log('PWA ServiceWorker registered with scope:', reg.scope);
-          }).catch(function(err) {
-            navigator.serviceWorker.register('/dev-sw.js?dev-sw').catch(function() {});
-          });
+          const swPath = (document.querySelector('link[rel="manifest"]')?.getAttribute('href') || '/manifest.webmanifest')
+            .replace('manifest.webmanifest', 'sw.js')
+            .replace('manifest.json', 'sw.js');
+          navigator.serviceWorker.register(swPath).catch(function() {});
         });
       }
     </script>
